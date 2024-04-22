@@ -75,7 +75,7 @@ export default function NoteList({ navigation }) {
                     </Text>
                     <Text style={styles.noteDate}>
                         { Moment(note.id).format('MMMM Do YYYY, h:mm:ss a')} 
-                      </Text>
+                    </Text>
                   </View>
               </TouchableOpacity> 
           ))} 

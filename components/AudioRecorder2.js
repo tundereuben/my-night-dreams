@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button, StyleSheet, View, Text } from 'react-native';
 
 
-export default function AudioRecorder2() {
+export default function AudioRecorder2({ getRecordings }) {
     const [recording, setRecording] = useState();
     const [recordings, setRecordings] = useState([]);
 
@@ -32,6 +32,7 @@ export default function AudioRecorder2() {
             file: recording.getURI()
         });
         setRecordings(allRecordings);
+        getRecordings(allRecordings);
     }
 
     function getDurationFormatted(milliseconds) {

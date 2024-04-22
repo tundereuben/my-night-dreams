@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import { View, TextInput, StyleSheet, Text } from 'react-native';
 import ActionButton from "../components/ActionButton";
 import { storeData } from '../utils/storageFunctions';
 import { useRoute } from "@react-navigation/native"
 import AudioRecorder from "../components/AudioRecorder";
 import AudioRecorder2 from '../components/AudioRecorder2';
-
+import Moment from 'moment';
 
 
 export default function NewNote({ navigation }) {
@@ -18,6 +18,7 @@ export default function NewNote({ navigation }) {
   const [selectedNote, setSelectedNote] = useState(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [editMode, setEditMode] = useState(false);
 
   // if a note is selected, prepare for update
   useEffect(() => {
@@ -25,8 +26,16 @@ export default function NewNote({ navigation }) {
       setTitle(routeSelectedNote.title);
       setContent(routeSelectedNote.content);
       setSelectedNote(routeSelectedNote);
+      // setEditMode(true);
+    } else {
+      if (title === '' && content === '') {
+        setEditMode(true);
+      }
     }
-  }, [])
+  }, []);
+
+
+  const getRecordings = (r) => {console.log(`recordings ==> `, r)}
 
   // Function to handle saving a note 
   const handleSaveNote = () => { 
@@ -64,10 +73,44 @@ export default function NewNote({ navigation }) {
       storeData(updatedNotes);
       setSelectedNote(null); 
       navigation.navigate('NoteList');
-  }; 
+  };
+
+  const handleCancel = () => {
+    if (selectedNote?.id) {
+      setEditMode(false);
+    } else {
+      navigation.navigate('NoteList');
+    }
+  }
 
   return (
-    <View style={styles.form}>
+    <>
+      {!editMode &&
+        <View style={styles.noteContainer}>
+          <View style={styles.note}>
+            <Text style={styles.noteTitle}>{title}</Text>
+            <Text style={styles.noteContent}>{content}</Text>
+            <Text style={styles.noteDate}>
+              { Moment(selectedNote?.id).format('MMMM Do YYYY, h:mm:ss a')} 
+            </Text>
+          </View>
+          <View style={styles.buttonContainer}>
+            <ActionButton
+              title="Go Back"
+              onPress={() => { navigation.navigate('NoteList')}} 
+              color="darkblue"
+            />
+            <ActionButton 
+            title="Edit/Delete"
+            onPress={() => {setEditMode(true)}}
+            color="#FF3B30"
+          />
+          </View>
+        </View>
+      }
+
+      {editMode && 
+        <View style={styles.form}>
         <TextInput
           style={styles.input}
           placeholder='Enter title'
@@ -89,7 +132,8 @@ export default function NewNote({ navigation }) {
           />
           <ActionButton 
             title="Cancel"
-            onPress={() => { navigation.navigate('NoteList')}}
+            // onPress={() => { navigation.navigate('NoteList')}}
+            onPress={handleCancel}
             color="#FF9500"
           />
           {selectedNote?.id && ( 
@@ -102,33 +146,55 @@ export default function NewNote({ navigation }) {
         </View>
 
         {/* <AudioRecorder /> */}
-        <AudioRecorder2 />
+        {/* <AudioRecorder2 getRecordings={getRecordings} /> */}
       </View>
+      }
+    </>
   )
 }
 
 const styles = StyleSheet.create({
-    modalContainer: { 
-      flex: 1, 
-      padding: 30, 
-      backgroundColor: "white", 
-    },
-    image: {
-      flex: 1,
-      justifyContent: 'center',
-    },
-    form: {
-      flex: 1, 
-      padding: 30, 
-      marginTop: 50,
-    },
-    input: { 
-      borderWidth: 1, 
-      borderColor: "#E0E0E0", 
-      backgroundColor: '#E0E0E0',
-      padding: 10, 
-      marginBottom: 10, 
-      borderRadius: 5, 
+  noteContainer: {
+    flex: 1, 
+    padding: 30, 
+    marginTop: 50,
+  },
+  note: {
+    backgroundColor: '#E0E0E0',
+    marginBottom: 10,
+    padding: 10,
+    borderRadius: 5,
+  },
+  noteTitle: {
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textTransform: 'capitalize'
+  },
+  noteContent: {
+    fontSize: 15,
+    textAlign: 'justify',
+    lineHeight: 22
+  },
+  noteDate: {
+    color: 'grey',
+    textAlign: 'right',
+    fontSize: 12,
+    marginTop: 10
+  },
+  form: {
+    flex: 1, 
+    padding: 30, 
+    marginTop: 50,
+  },
+  input: { 
+    borderWidth: 1, 
+    borderColor: "#E0E0E0", 
+    backgroundColor: '#E0E0E0',
+    padding: 10, 
+    marginBottom: 10, 
+    borderRadius: 5,
+    fontWeight: 'bold',
+    textTransform: 'capitalize'
   },
   contentInput: { 
     borderWidth: 1, 
@@ -139,6 +205,7 @@ const styles = StyleSheet.create({
     borderRadius: 5, 
     height: 150, 
     textAlignVertical: "top",
+    lineHeight: 20
   },
   buttonContainer: { 
     flexDirection: "row", 
